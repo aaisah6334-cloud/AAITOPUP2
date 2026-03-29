@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sidra / aaitopup marketplace</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/web3/4.1.1/web3.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --sidra-green: #2ecc71;
+            --sidra-dark: #1e272e;
+            --sidra-gold: #f1c40f;
+            --glass: rgba(255, 255, 255, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, sans-serif;
+        }
+
+        body {
+            background: radial-gradient(circle at top right, #1e272e, #000000);
+            color: #ffffff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* HD Navigation */
+        header {
+            padding: 1.5rem 5%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        /* Sidra Logo Representation */
+        .sidra-logo {
+            width: 45px;
+            height: 45px;
+            background: var(--sidra-green);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px rgba(46, 204, 113, 0.4);
+            font-weight: bold;
+            font-size: 1.2rem;
+            color: white;
+            position: relative;
+        }
+
+        .sidra-logo::after {
+            content: 'S';
+            font-family: serif;
+        }
+
+        .brand-name {
+            font-size: 1.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(to right, #2ecc71, #f1c40f);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .wallet-btn {
+            background: linear-gradient(45deg, var(--sidra-green), #27ae60);
+            border: none;
+            padding: 0.7rem 1.4rem;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .wallet-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+
+        /* Market Section */
+        .hero {
+            padding: 4rem 5%;
+            text-align: center;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 900;
+        }
+
+        .product-grid {
+            max-width: 1300px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2.5rem;
+        }
+
+        .card {
+            background: var(--glass);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 24px;
+            padding: 1.5rem;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: scale(1.03);
+            background: rgba(255,255,255,0.08);
+            border-color: var(--sidra-green);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 220px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 18px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+        }
+
+        .price-tag {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--sidra-gold);
+            margin: 1rem 0;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .price-tag::after { content: 'SDA'; font-size: 0.8rem; opacity: 0.7; }
+
+        .buy-now {
+            width: 100%;
+            padding: 1rem;
+            border-radius: 15px;
+            border: 1px solid var(--sidra-green);
+            background: transparent;
+            color: var(--sidra-green);
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .buy-now:hover {
+            background: var(--sidra-green);
+            color: white;
+        }
+
+        /* Mobile Layout */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            header { padding: 1rem 5%; }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo-container">
+            <div class="sidra-logo"></div>
+            <span class="brand-name">SidraMarket</span>
+        </div>
+        <button class="wallet-btn" id="connectWallet" onclick="connect()">
+            <i class="fas fa-wallet"></i> Connect Sidra
+        </button>
+    </header>
+
+    <section class="hero">
+        <h1>Trade in the Sidra Ecosystem</h1>
+        <p>Compliant, Secure, and Peer-to-Peer Marketplace</p>
+    </section>
+
+    <div class="product-grid" id="grid">
+        </div>
+
+    <script>
+        const SIDRA_CHAIN_ID = '0x17cad'; // Decimal: 97453
+        const inventory = [
+            { name: "Digital Canvas Pro", price: "120", icon: "🎨" },
+            { name: "Hardware Wallet S1", price: "250", icon: "🔐" },
+            { name: "Premium Dev Course", price: "45", icon: "💻" },
+            { name: "Smart Node Server", price: "890", icon: "🖥️" }
+        ];
+
+        function loadProducts() {
+            const grid = document.getElementById('grid');
+            grid.innerHTML = inventory.map(item => `
+                <div class="card">
+                    <div class="product-image">${item.icon}</div>
+                    <h2>${item.name}</h2>
+                    <div class="price-tag">${item.price}</div>
+                    <button class="buy-now" onclick="initiateTrade('${item.name}', ${item.price})">Buy with Sidra</button>
+                </div>
+            `).join('');
+        }
+
+        async function connect() {
+            if (window.ethereum) {
+                try {
+                    const accounts = await ethereum.request({ method: 'eth_requestAccounts' });
+                    document.getElementById('connectWallet').innerText = 
+                        accounts[0].substring(0, 6) + "..." + accounts[0].substring(38);
+                    
+                    // Switch to SidraChain if not already on it
+                    await ethereum.request({
+                        method: 'wallet_switchEthereumChain',
+                        params: [{ chainId: SIDRA_CHAIN_ID }],
+                    });
+                } catch (error) {
+                    console.error("Connection failed", error);
+                }
+            } else {
+                alert("Please install Sidra Wallet or MetaMask!");
+            }
+        }
+
+        async function initiateTrade(name, price) {
+            if (!window.ethereum) return alert("Connect Wallet First");
+            
+            const web3 = new Web3(window.ethereum);
+            const accounts = await web3.eth.getAccounts();
+            const amountInWei = web3.utils.toWei(price.toString(), 'ether');
+
+            // This triggers the actual transaction on SidraChain
+            const tx = {
+                from: accounts[0],
+                to: '0x0000000000000000000000000000000000000000', // Replace with Merchant Address
+                value: amountInWei
+            };
+
+            try {
+                alert(`Confirming order for ${name}... Check your wallet!`);
+                await web3.eth.sendTransaction(tx);
+                alert("Trade Successful on SidraChain!");
+            } catch (err) {
+                alert("Transaction Failed or Cancelled");
+            }
+        }
+
+        loadProducts();
+    </script>
+</body>
+</html>
